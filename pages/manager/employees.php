@@ -1,0 +1,45 @@
+<?php
+// Departmandaki çalışanları getir
+$stmt = $conn->prepare("
+    SELECT u.*, d.department_name, r.role_name 
+    FROM USERS u
+    LEFT JOIN DEPARTMENT d ON u.department_id = d.department_id
+    LEFT JOIN ROLES r ON u.role_id = r.role_id
+    WHERE u.role_id = 4 AND u.department_id = ?
+    ORDER BY u.name
+");
+$stmt->execute([$_SESSION['department_id']]);
+$employees = $stmt->fetchAll();
+?>
+
+<h1>Departman Çalışanları</h1>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Ad Soyad</th>
+            <th>Email</th>
+            <th>Departman</th>
+            <th>Rol</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($employees as $employee): ?>
+        <tr>
+            <td><?php echo $employee['user_id']; ?></td>
+            <td><?php echo htmlspecialchars($employee['name']); ?></td>
+            <td><?php echo htmlspecialchars($employee['email']); ?></td>
+            <td><?php echo htmlspecialchars($employee['department_name']); ?></td>
+            <td><?php echo htmlspecialchars($employee['role_name']); ?></td>
+            <td>
+                <form method="POST" style="display: inline;">
+                    <input type="hidden" name="user_id" value="<?php echo $employee['user_id']; ?>">
+                    <button type="submit" name="delete_employee" onclick="return confirm('Bu çalışanı silmek istediğinizden emin misiniz?')">Sil</button>
+                </form>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table> 

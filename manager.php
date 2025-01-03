@@ -12,105 +12,70 @@ try {
     die("Bağlantı hatası: " . $e->getMessage());
 }
 
-// İstatistikleri getir
-if (isset($_GET['action']) && $_GET['action'] === 'get_statistics') {
+// Talep yanıtlama
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_response'])) {
     try {
-        $stats = [];
+        // Önce talebin durumunu güncelle
+        $stmt = $conn->prepare("UPDATE TICKET SET status_id = ? WHERE ticket_id = ?");
+        $stmt->execute([$_POST['status_id'], $_POST['ticket_id']]);
         
-        // Toplam talep sayısı
-        $stmt = $conn->query("SELECT COUNT(*) as total FROM TICKET");
-        $stats['total_tickets'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-        
-        // Açık talep sayısı
-        $stmt = $conn->query("SELECT COUNT(*) as open FROM TICKET WHERE status_id = 1");
-        $stats['open_tickets'] = $stmt->fetch(PDO::FETCH_ASSOC)['open'];
-        
-        // Bekleyen yanıt sayısı
-        $stmt = $conn->query("SELECT COUNT(*) as pending FROM RESPONSE WHERE status_id = 1");
-        $stats['pending_responses'] = $stmt->fetch(PDO::FETCH_ASSOC)['pending'];
-        
-        // Kategori bazlı talep dağılımı
-        $stmt = $conn->query("
-            SELECT c.category_name, COUNT(*) as count
-            FROM TICKET t
-            JOIN CATEGORY c ON t.category_id = c.category_id
-            GROUP BY c.category_id
+        // Yanıtı ekle
+        $stmt = $conn->prepare("
+            INSERT INTO RESPONSE (ticket_id, employee_id, description, response_date)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
         ");
-        $stats['category_distribution'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->execute([
+            $_POST['ticket_id'],
+            $_SESSION['user_id'],
+            $_POST['response']
+        ]);
         
-        echo json_encode(['success' => true, 'stats' => $stats]);
+        header("Location: manager.php?page=ticket_details&ticket_id=" . $_POST['ticket_id'] . "&success=1");
+        exit;
     } catch(PDOException $e) {
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        $error = $e->getMessage();
     }
-    exit;
 }
 
-// Yanıt detaylarını getir
-if (isset($_GET['action']) && $_GET['action'] === 'get_response_details') {
+// Çalışan ekleme
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_employee'])) {
     try {
         $stmt = $conn->prepare("
-            SELECT r.*, t.title as ticket_title, u.name as employee_name,
-                   t.description as ticket_description
-            FROM RESPONSE r
-            JOIN TICKET t ON r.ticket_id = t.ticket_id
-            JOIN USERS u ON r.employee_id = u.user_id
-            WHERE r.response_id = ?
+            INSERT INTO USERS (name, email, password, role_id, department_id) 
+            VALUES (?, ?, ?, ?, ?)
         ");
+        $stmt->execute([
+            $_POST['name'],
+            $_POST['email'],
+            password_hash($_POST['password'], PASSWORD_DEFAULT),
+            4, // role_id = 4 (Employee)
+            $_SESSION['department_id']
+        ]);
         
-        $stmt->execute([$_GET['response_id']]);
-        echo json_encode(['success' => true, 'response' => $stmt->fetch(PDO::FETCH_ASSOC)]);
-    } catch(PDOException $e) {
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-    }
-    exit;
-}
-
-// Yanıt onaylama işlemi
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    if ($_POST['action'] === 'approve_response') {
-        try {
-            $stmt = $conn->prepare("
-                UPDATE RESPONSE 
-                SET status_id = 2 
-                WHERE response_id = ?
-            ");
-            
-            $stmt->execute([$_POST['response_id']]);
-            
-            // Log kaydı
-            $stmt = $conn->prepare("
-                INSERT INTO LOG (user_id, action, action_date) 
-                VALUES (?, 'Yanıt onaylandı', CURRENT_TIMESTAMP)
-            ");
-            $stmt->execute([$_SESSION['user_id']]);
-            
-            echo json_encode(['success' => true]);
-        } catch(PDOException $e) {
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-        }
+        header("Location: manager.php?page=employees&success=2");
         exit;
+    } catch(PDOException $e) {
+        $error = $e->getMessage();
     }
 }
 
-// Bekleyen yanıtları getirme
-if (isset($_GET['action']) && $_GET['action'] === 'get_pending_responses') {
+// Çalışan silme
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_employee'])) {
     try {
-        $stmt = $conn->query("
-            SELECT r.*, t.title as ticket_title, u.name as employee_name, 
-                   t.description as ticket_description
-            FROM RESPONSE r
-            JOIN TICKET t ON r.ticket_id = t.ticket_id
-            JOIN USERS u ON r.employee_id = u.user_id
-            WHERE r.status_id = 1
-            ORDER BY r.response_date DESC
+        $stmt = $conn->prepare("
+            DELETE FROM USERS 
+            WHERE user_id = ? AND role_id = 4 AND department_id = ?
         ");
+        $stmt->execute([$_POST['user_id'], $_SESSION['department_id']]);
         
-        echo json_encode(['success' => true, 'responses' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        header("Location: manager.php?page=employees&success=1");
+        exit;
     } catch(PDOException $e) {
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        $error = $e->getMessage();
     }
-    exit;
 }
+
+$page = $_GET['page'] ?? 'all_tickets';
 ?>
 
 <!DOCTYPE html>
@@ -118,108 +83,55 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_pending_responses') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Müdür Paneli</title>
-    <link rel="stylesheet" href="assets/css/managercss.css">
+    <title>Yönetici Paneli</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
     <div class="container">
         <nav class="sidebar">
             <ul>
-                <li><a href="#" id="dashboardLink">Dashboard</a></li>
-                <li><a href="#" id="allTicketsLink">Tüm Talepler</a></li>
-                <li><a href="#" id="pendingResponsesLink">Bekleyen Yanıtlar</a></li>
-                <li><a href="#" id="statisticsLink">İstatistikler</a></li>
+                <li><a href="manager.php?page=all_tickets">Tüm Talepler</a></li>
+                <li><a href="manager.php?page=employees">Çalışanlar</a></li>
+                <li><a href="manager.php?page=add_employee">Yeni Çalışan Ekle</a></li>
                 <li><a href="logout.php">Çıkış Yap</a></li>
             </ul>
         </nav>
+        
+        <div class="content">
+            <?php if (isset($error)): ?>
+                <div class="error"><?php echo $error; ?></div>
+            <?php endif; ?>
+            
+            <?php if (isset($_GET['success'])): ?>
+                <div class="success">
+                    <?php
+                    switch($_GET['success']) {
+                        case '1': echo "İşlem başarıyla tamamlandı!"; break;
+                        case '2': echo "Çalışan başarıyla eklendi!"; break;
+                    }
+                    ?>
+                </div>
+            <?php endif; ?>
 
-        <div class="content" id="content">
-            <!-- İçerik JavaScript ile doldurulacak -->
+            <?php
+            switch($page) {
+                case 'all_tickets':
+                    include 'pages/manager/all_tickets.php';
+                    break;
+                case 'employees':
+                    include 'pages/manager/employees.php';
+                    break;
+                case 'add_employee':
+                    include 'pages/manager/add_employee.php';
+                    break;
+                case 'ticket_details':
+                    include 'pages/manager/ticket_details.php';
+                    break;
+                default:
+                    include 'pages/manager/all_tickets.php';
+            }
+            ?>
         </div>
     </div>
-
-    <script>
-        // Event Listener'ları ekle
-        document.addEventListener('DOMContentLoaded', function() {
-            // Sayfa yüklendiğinde dashboard'u göster
-            showContent('dashboard');
-
-            // Link event listener'ları
-            document.getElementById('dashboardLink').addEventListener('click', function(e) {
-                e.preventDefault();
-                showContent('dashboard');
-            });
-
-            document.getElementById('allTicketsLink').addEventListener('click', function(e) {
-                e.preventDefault();
-                showContent('all_tickets');
-            });
-
-            document.getElementById('pendingResponsesLink').addEventListener('click', function(e) {
-                e.preventDefault();
-                showContent('pending_responses');
-            });
-
-            document.getElementById('statisticsLink').addEventListener('click', function(e) {
-                e.preventDefault();
-                showContent('statistics');
-            });
-        });
-
-        // showContent fonksiyonu (önceki gönderdiğimiz gibi)
-        async function showContent(section) {
-            const content = document.getElementById('content');
-            
-            switch(section) {
-                case 'dashboard':
-                    try {
-                        const response = await fetch('manager.php?action=get_statistics');
-                        const data = await response.json();
-                        
-                        if (data.success) {
-                            const stats = data.stats;
-                            content.innerHTML = `
-                                <div class="dashboard">
-                                    <h1>Hoş Geldiniz</h1>
-                                    <div class="stats-grid">
-                                        <div class="stat-card">
-                                            <h3>Toplam Talep</h3>
-                                            <p class="stat-number">${stats.total_tickets}</p>
-                                        </div>
-                                        <div class="stat-card">
-                                            <h3>Açık Talep</h3>
-                                            <p class="stat-number">${stats.open_tickets}</p>
-                                        </div>
-                                        <div class="stat-card">
-                                            <h3>Bekleyen Yanıt</h3>
-                                            <p class="stat-number">${stats.pending_responses}</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="category-stats">
-                                        <h3>Kategori Dağılımı</h3>
-                                        <div class="category-chart">
-                                            ${stats.category_distribution.map(cat => `
-                                                <div class="category-bar">
-                                                    <div class="bar-label">${cat.category_name}</div>
-                                                    <div class="bar" style="width: ${(cat.count / stats.total_tickets * 100)}%">
-                                                        ${cat.count}
-                                                    </div>
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    } catch (error) {
-                        content.innerHTML = '<p>İstatistikler yüklenirken bir hata oluştu.</p>';
-                    }
-                    break;
-                    
-                // ... diğer case'ler devam ediyor ...
-            }
-        }
-    </script>
 </body>
 </html> 
