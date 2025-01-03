@@ -21,20 +21,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
-        if ($user && ($password == $user['password'])) {
-            // Oturum bilgilerini ayarla
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['role'] = $user['role_id'];
-            $_SESSION['name'] = $user['name'];
+        if ($user) {
+           
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['role'] = $user['role_id'];
+                $_SESSION['name'] = $user['name'];
 
-            // Kullanıcıyı gösterge paneline yönlendir
-            if ($user['role_id'] == 2) { // Customer rolü
-                header("Location: customer.php");
+                switch ($user['role_id']) {
+                    case 1: // Admin
+                        header("Location: admin.php");
+                        break;
+                    case 2: // Customer
+                        header("Location: customer.php");
+                        break;
+                    case 3: // Manager
+                        header("Location: manager.php");
+                        break;
+                    case 4: // Employee
+                        header("Location: employee.php");
+                        break;
+                    default:
+                        header("Location: login.php");
+                        break;
+                }
+                exit;
             } else {
-                header("Location: dashboard.php");
+                $error_message = "Geçersiz e-posta veya şifre!";
             }
-
-            exit;
         } else {
             $error_message = "Geçersiz e-posta veya şifre!";
         }

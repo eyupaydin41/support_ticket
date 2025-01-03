@@ -90,16 +90,7 @@ try {
             FOREIGN KEY (status_id) REFERENCES STATUS(status_id)
         );
 
-        -- 10. FILE Tablosu
-        CREATE TABLE IF NOT EXISTS FILE (
-            file_id INT PRIMARY KEY AUTO_INCREMENT,
-            ticket_id INT NOT NULL,
-            file_name VARCHAR(255) NOT NULL,
-            upload_date DATE NOT NULL,
-            FOREIGN KEY (ticket_id) REFERENCES TICKET(ticket_id)
-        );
-
-        -- 11. LOG Tablosu
+        -- 10. LOG Tablosu
         CREATE TABLE IF NOT EXISTS LOG (
             log_id INT PRIMARY KEY AUTO_INCREMENT,
             user_id INT NOT NULL,
@@ -108,7 +99,7 @@ try {
             FOREIGN KEY (user_id) REFERENCES USERS(user_id)
         );
 
-        -- 12. ROLE_PERMISSION Tablosu
+        -- 11. ROLE_PERMISSION Tablosu
         CREATE TABLE IF NOT EXISTS ROLE_PERMISSION (
             role_id INT NOT NULL,
             permission_id INT NOT NULL,
