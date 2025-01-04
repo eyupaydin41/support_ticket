@@ -29,7 +29,7 @@ $stmt = $conn->prepare("
     SELECT r.*, u.name as employee_name
     FROM RESPONSE r
     JOIN USERS u ON r.employee_id = u.user_id
-    WHERE r.ticket_id = ?
+    WHERE r.ticket_id = ? AND r.status_id = 1
     ORDER BY r.response_date DESC
 ");
 $stmt->execute([$_GET['ticket_id']]);

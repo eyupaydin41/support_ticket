@@ -27,15 +27,11 @@ $stmt = $conn->prepare("
     SELECT r.*, u.name as employee_name
     FROM RESPONSE r
     JOIN USERS u ON r.employee_id = u.user_id
-    WHERE r.ticket_id = ?
+    WHERE r.ticket_id = ? AND r.status_id = 1
     ORDER BY r.response_date DESC
 ");
 $stmt->execute([$_GET['ticket_id']]);
 $responses = $stmt->fetchAll();
-
-// Durumları getir
-$stmt = $conn->query("SELECT * FROM STATUS ORDER BY status_id");
-$statuses = $stmt->fetchAll();
 ?>
 
 <h1>Talep Detayları</h1>
@@ -60,35 +56,9 @@ $statuses = $stmt->fetchAll();
         <h3>Açıklama</h3>
         <p><?php echo nl2br(htmlspecialchars($ticket['description'])); ?></p>
     </div>
-    
-    <div class="response-form">
-        <h3>Yanıt Ekle</h3>
-        <form method="POST" action="employee.php">
-            <input type="hidden" name="ticket_id" value="<?php echo $ticket['ticket_id']; ?>">
-            
-            <div class="form-group">
-                <label for="status_id">Durum:</label>
-                <select id="status_id" name="status_id" required>
-                    <?php foreach ($statuses as $status): ?>
-                        <option value="<?php echo $status['status_id']; ?>" 
-                            <?php echo ($status['status_id'] == $ticket['status_id']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($status['status_name']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
 
-            <div class="form-group">
-                <label for="response">Yanıtınız:</label>
-                <textarea id="response" name="response" rows="5" required></textarea>
-            </div>
-
-            <button type="submit" name="add_response">Yanıt Ekle</button>
-        </form>
-    </div>
-    
     <div class="responses-section">
-        <h3>Önceki Yanıtlar</h3>
+        <h3>Yanıtlar</h3>
         <?php if (empty($responses)): ?>
             <p>Henüz yanıt bulunmamaktadır.</p>
         <?php else: ?>
@@ -105,4 +75,20 @@ $statuses = $stmt->fetchAll();
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
+    
+    <div class="response-form">
+        <h3>Yanıt Ekle</h3>
+        <form method="POST" action="employee.php">
+            <input type="hidden" name="ticket_id" value="<?php echo $ticket['ticket_id']; ?>">
+
+            <div class="form-group">
+                <label for="response">Yanıtınız:</label>
+                <textarea id="response" name="response" rows="5" required></textarea>
+            </div>
+
+            <button type="submit" name="add_response">Yanıt Ekle</button>
+        </form>
+    </div>
+    
+    
 </div> 

@@ -37,38 +37,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_response'])) {
     }
 }
 
-// Çalışan ekleme
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_employee'])) {
+// Yanıt onaylama
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['approve_response'])) {
     try {
-        $stmt = $conn->prepare("
-            INSERT INTO USERS (name, email, password, role_id, department_id) 
-            VALUES (?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([
-            $_POST['name'],
-            $_POST['email'],
-            password_hash($_POST['password'], PASSWORD_DEFAULT),
-            4, // role_id = 4 (Employee)
-            $_SESSION['department_id']
-        ]);
-        
-        header("Location: manager.php?page=employees&success=2");
-        exit;
-    } catch(PDOException $e) {
-        $error = $e->getMessage();
-    }
-}
+        // RESPONSE tablosunda yanıtın durumunu güncelle
+        $stmt = $conn->prepare("UPDATE RESPONSE SET status_id = ? WHERE response_id = ?");
+        $stmt->execute([1, $_POST['response_id']]);
 
-// Çalışan silme
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_employee'])) {
-    try {
-        $stmt = $conn->prepare("
-            DELETE FROM USERS 
-            WHERE user_id = ? AND role_id = 4 AND department_id = ?
-        ");
-        $stmt->execute([$_POST['user_id'], $_SESSION['department_id']]);
-        
-        header("Location: manager.php?page=employees&success=1");
+        // Başarılı mesajı ekleyip geri yönlendirme yap
+        header("Location: manager.php?page=pending_responses&success=1");
         exit;
     } catch(PDOException $e) {
         $error = $e->getMessage();
@@ -84,15 +61,220 @@ $page = $_GET['page'] ?? 'all_tickets';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yönetici Paneli</title>
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        /* Genel Stil Ayarları */
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+/* Konteyner düzeni */
+.container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #343a40;
+    color: #fff;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 30px 20px;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin-bottom: 25px;
+}
+
+.sidebar ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+.sidebar ul li a:hover {
+    color: #007bff;
+}
+
+.content {
+    margin-left: 270px;
+    padding: 30px 40px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    flex-grow: 1;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+h1, h2, h3 {
+    color: #333;
+}
+
+.error, .success {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.error {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.success {
+    background-color: #2ecc71;
+    color: white;
+}
+
+/* Ticket Kartları */
+.ticket-card, .response-card, .pending-response-card {
+    background-color: #ecf0f1;
+    padding: 20px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ticket-header h3, .ticket-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.priority-badge {
+    padding: 8px 16px;
+    border-radius: 25px;
+    color: #fff;
+    font-size: 14px;
+    text-transform: capitalize;
+}
+
+.priority-low {
+    background-color: #28a745;
+}
+
+.priority-medium {
+    background-color: #ffc107;
+}
+
+.priority-high {
+    background-color: #dc3545;
+}
+
+.ticket-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.ticket-actions {
+    text-align: right;
+}
+
+.btn-view {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.btn-view:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Yanıtlar */
+.responses-section {
+    margin-top: 20px;
+}
+
+.response-meta {
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.response-content {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #34495e;
+}
+
+/* Pending Responses */
+.pending-responses-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.pending-responses-container .response-card {
+    display: flex;
+    justify-content: space-between;
+}
+
+button[type="submit"] {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #2980b9;
+}
+
+/* Genel düzenlemeler */
+.tickets-container, .pending-responses-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.ticket-card, .response-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: box-shadow 0.3s ease;
+}
+
+.ticket-card:hover, .response-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+    </style>
 </head>
 <body>
     <div class="container">
         <nav class="sidebar">
             <ul>
                 <li><a href="manager.php?page=all_tickets">Tüm Talepler</a></li>
-                <li><a href="manager.php?page=employees">Çalışanlar</a></li>
-                <li><a href="manager.php?page=add_employee">Yeni Çalışan Ekle</a></li>
+                <li><a href="manager.php?page=my_tickets">Yanıt Verdiğim Talepler</a></li>
+                <li><a href="manager.php?page=pending_responses">Onay Bekleyen Yanıtlar</a></li>
                 <li><a href="logout.php">Çıkış Yap</a></li>
             </ul>
         </nav>
@@ -118,14 +300,14 @@ $page = $_GET['page'] ?? 'all_tickets';
                 case 'all_tickets':
                     include 'pages/manager/all_tickets.php';
                     break;
-                case 'employees':
-                    include 'pages/manager/employees.php';
-                    break;
-                case 'add_employee':
-                    include 'pages/manager/add_employee.php';
-                    break;
                 case 'ticket_details':
                     include 'pages/manager/ticket_details.php';
+                    break;
+                case 'my_tickets':
+                    include 'pages/manager/my_tickets.php';
+                    break;
+                case 'pending_responses':
+                    include 'pages/manager/pending_responses.php';
                     break;
                 default:
                     include 'pages/manager/all_tickets.php';

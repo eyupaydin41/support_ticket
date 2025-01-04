@@ -15,11 +15,7 @@ try {
 // Yeni talep oluşturma
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create_ticket'])) {
     try {
-        $stmt = $conn->prepare("
-            INSERT INTO TICKET (customer_id, title, description, category_id, priorities_id, status_id, create_date)
-            VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
-        ");
-        
+        $stmt = $conn->prepare("INSERT INTO TICKET (customer_id, title, description, category_id, priorities_id, status_id, create_date) VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
         $stmt->execute([
             $_SESSION['user_id'],
             $_POST['title'],
@@ -27,14 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create_ticket'])) {
             $_POST['category_id'],
             $_POST['priorities_id']
         ]);
-        
-        // Log kaydı
-        $stmt = $conn->prepare("
-            INSERT INTO LOG (user_id, action, action_date)
-            VALUES (?, 'Yeni talep oluşturuldu', CURRENT_TIMESTAMP)
-        ");
+        $stmt = $conn->prepare("INSERT INTO LOG (user_id, action, action_date) VALUES (?, 'Yeni talep oluşturuldu', CURRENT_TIMESTAMP)");
         $stmt->execute([$_SESSION['user_id']]);
-        
         header("Location: customer.php?page=my_tickets&success=1");
         exit;
     } catch(PDOException $e) {
@@ -51,7 +41,196 @@ $page = $_GET['page'] ?? 'my_tickets';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Müşteri Paneli</title>
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    flex-grow: 1;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #343a40;
+    color: #fff;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 30px 20px;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin-bottom: 25px;
+}
+
+.sidebar ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+.sidebar ul li a:hover {
+    color: #007bff;
+}
+
+.content {
+    margin-left: 270px;
+    padding: 30px 40px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    flex-grow: 1;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.form-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.tickets-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.ticket-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: box-shadow 0.3s ease;
+}
+
+.ticket-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.priority-badge {
+    padding: 8px 16px;
+    border-radius: 25px;
+    color: #fff;
+    font-size: 14px;
+    text-transform: capitalize;
+}
+
+.priority-low {
+    background-color: #28a745;
+}
+
+.priority-medium {
+    background-color: #ffc107;
+}
+
+.priority-high {
+    background-color: #dc3545;
+}
+
+.ticket-actions {
+    text-align: right;
+}
+
+.btn-view {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.btn-view:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.success,
+.error {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+    </style>
 </head>
 <body>
     <div class="container">
@@ -62,18 +241,15 @@ $page = $_GET['page'] ?? 'my_tickets';
                 <li><a href="logout.php">Çıkış Yap</a></li>
             </ul>
         </nav>
-        
         <div class="content">
             <?php if (isset($error)): ?>
                 <div class="error"><?php echo $error; ?></div>
             <?php endif; ?>
-            
             <?php if (isset($_GET['success'])): ?>
                 <div class="success">
                     <?php if ($_GET['success'] == '1') echo "Talep başarıyla oluşturuldu!"; ?>
                 </div>
             <?php endif; ?>
-
             <?php
             switch($page) {
                 case 'create_ticket':

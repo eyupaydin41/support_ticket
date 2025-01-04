@@ -8,7 +8,7 @@ $stmt = $conn->prepare("
     JOIN STATUS s ON t.status_id = s.status_id
     JOIN USERS u ON t.customer_id = u.user_id
     JOIN RESPONSE r ON t.ticket_id = r.ticket_id
-    WHERE r.employee_id = ?
+    WHERE r.employee_id = ? AND r.status_id = 1
     ORDER BY t.create_date DESC
 ");
 $stmt->execute([$_SESSION['user_id']]);

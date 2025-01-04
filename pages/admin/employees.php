@@ -1,9 +1,8 @@
 <?php
 $stmt = $conn->query("
-    SELECT u.*, d.department_name, r.role_name 
+    SELECT u.*, r.role_name 
     FROM USERS u
-    LEFT JOIN DEPARTMENT d ON u.department_id = d.department_id
-    LEFT JOIN ROLES r ON u.role_id = r.role_id
+    LEFT JOIN ROLE r ON u.role_id = r.role_id
     WHERE u.role_id IN (3, 4)
     ORDER BY u.user_id
 ");
@@ -18,7 +17,6 @@ $employees = $stmt->fetchAll();
             <th>ID</th>
             <th>Ad Soyad</th>
             <th>Email</th>
-            <th>Departman</th>
             <th>Rol</th>
             <th>İşlemler</th>
         </tr>
@@ -29,7 +27,6 @@ $employees = $stmt->fetchAll();
             <td><?php echo $employee['user_id']; ?></td>
             <td><?php echo htmlspecialchars($employee['name']); ?></td>
             <td><?php echo htmlspecialchars($employee['email']); ?></td>
-            <td><?php echo htmlspecialchars($employee['department_name'] ?? '-'); ?></td>
             <td><?php echo htmlspecialchars($employee['role_name']); ?></td>
             <td>
                 <form method="POST" style="display: inline;">

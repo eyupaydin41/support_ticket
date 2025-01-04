@@ -12,10 +12,7 @@ $priorities = $stmt->fetchAll();
 
 <div class="form-container">
     <form method="POST" action="customer.php">
-        <div class="form-group">
-            <label for="title">Başlık:</label>
-            <input type="text" id="title" name="title" required>
-        </div>
+        
 
         <div class="form-group">
             <label for="category_id">Kategori:</label>
@@ -37,6 +34,11 @@ $priorities = $stmt->fetchAll();
                     </option>
                 <?php endforeach; ?>
             </select>
+        </div>
+
+        <div class="form-group">
+            <label for="title">Başlık:</label>
+            <input type="text" id="title" name="title" required>
         </div>
 
         <div class="form-group">
