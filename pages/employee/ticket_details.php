@@ -51,6 +51,9 @@ $responses = $stmt->fetchAll();
         <p><strong>Kategori:</strong> <?php echo htmlspecialchars($ticket['category_name']); ?></p>
         <p><strong>Tarih:</strong> <?php echo date('d.m.Y H:i', strtotime($ticket['create_date'])); ?></p>
     </div>
+
+        <!-- Talebi Kapat Butonu -->
+
     
     <div class="ticket-description">
         <h3>Açıklama</h3>
@@ -77,18 +80,31 @@ $responses = $stmt->fetchAll();
     </div>
     
     <div class="response-form">
-        <h3>Yanıt Ekle</h3>
-        <form method="POST" action="employee.php">
-            <input type="hidden" name="ticket_id" value="<?php echo $ticket['ticket_id']; ?>">
+    <h3>Yanıt Ekle</h3>
+    <form method="POST" action="employee.php" class="form-container">
+        <input type="hidden" name="ticket_id" value="<?php echo $ticket['ticket_id']; ?>">
 
-            <div class="form-group">
-                <label for="response">Yanıtınız:</label>
-                <textarea id="response" name="response" rows="5" required></textarea>
-            </div>
+        <div class="form-group">
+            <label for="response">Yanıtınız:</label>
+            <textarea id="response" name="response" rows="5" required></textarea>
+        </div>
 
-            <button type="submit" name="add_response">Yanıt Ekle</button>
-        </form>
-    </div>
+        <div class="form-buttons">
+            <!-- Mavi buton -->
+            <button type="submit" name="add_response" class="btn-blue">Yanıt Ekle</button>
+            <!-- Kırmızı buton -->
+            
+        </div>
+    </form>
+    
+</div>
+
+            <form method="POST" action="">
+                <input type="hidden" name="ticket_id" value="<?php echo $ticket['ticket_id']; ?>">
+                <button type="submit" name="close_ticket" class="btn-red">Talebi Kapat</button>
+            </form>
+
+
     
     
 </div> 

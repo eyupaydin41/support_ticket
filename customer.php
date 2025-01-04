@@ -32,6 +32,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create_ticket'])) {
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_response'])) {
+    try {
+
+        // Yanıtı ekle
+        $stmt = $conn->prepare("
+            INSERT INTO RESPONSE (ticket_id, employee_id, status_id, description, response_date)
+            VALUES (?, ?, 1, ?, CURRENT_TIMESTAMP)
+        ");
+        $stmt->execute([
+            $_POST['ticket_id'],
+            $_SESSION['user_id'],
+            $_POST['response']
+        ]);
+        
+        // Log kaydı
+        $stmt = $conn->prepare("
+            INSERT INTO LOG (user_id, action, action_date)
+            VALUES (?, 'Talep yanıtlandı', CURRENT_TIMESTAMP)
+        ");
+        $stmt->execute([$_SESSION['user_id']]);
+        
+        header("Location: customer.php?page=ticket_details&ticket_id=" . $_POST['ticket_id'] . "&success=1");
+        exit;
+    } catch(PDOException $e) {
+        $error = $e->getMessage();
+    }
+}
+
 $page = $_GET['page'] ?? 'my_tickets';
 ?>
 
@@ -153,6 +181,16 @@ button:hover {
     background-color: #0056b3;
 }
 
+.ticket-details {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-top: 30px;
+}
+
 .tickets-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -176,15 +214,21 @@ button:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.ticket-header h2 {
+    font-size: 24px;
+    color: #333;
 }
 
 .priority-badge {
-    padding: 8px 16px;
+    padding: 10px 20px;
     border-radius: 25px;
     color: #fff;
     font-size: 14px;
     text-transform: capitalize;
+    font-weight: bold;
 }
 
 .priority-low {
@@ -198,6 +242,26 @@ button:hover {
 .priority-high {
     background-color: #dc3545;
 }
+
+.ticket-description {
+    margin-bottom: 20px;
+}
+
+.ticket-description h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.ticket-description p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #444;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
 
 .ticket-actions {
     text-align: right;
@@ -215,6 +279,100 @@ button:hover {
     color: #0056b3;
     text-decoration: underline;
 }
+
+.ticket-info {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.ticket-info p {
+    margin: 5px 0;
+    font-size: 16px;
+    color: #555;
+}
+
+.responses-section {
+    margin-top: 30px;
+}
+
+.responses-section h3 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.response-card {
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.response-meta {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #555;
+    font-style: italic;
+}
+
+.response-content {
+    font-size: 16px;
+    color: #333;
+    line-height: 1.6;
+}
+
+.response-form {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.response-form h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.response-form .form-group {
+    margin-bottom: 20px;
+}
+
+.response-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.response-form textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: vertical;
+}
+
+.response-form button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.response-form button:hover {
+    background-color: #0056b3;
+}
+
 
 .success,
 .error {
@@ -247,7 +405,7 @@ button:hover {
             <?php endif; ?>
             <?php if (isset($_GET['success'])): ?>
                 <div class="success">
-                    <?php if ($_GET['success'] == '1') echo "Talep başarıyla oluşturuldu!"; ?>
+                    <?php if ($_GET['success'] == '1') echo "Başarıyla oluşturuldu!"; ?>
                 </div>
             <?php endif; ?>
             <?php

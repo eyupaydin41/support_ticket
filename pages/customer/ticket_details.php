@@ -73,4 +73,18 @@ $responses = $stmt->fetchAll();
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
+
+    <div class="response-form">
+        <h3>Yanıt Ekle</h3>
+        <form method="POST" action="customer.php">
+            <input type="hidden" name="ticket_id" value="<?php echo $ticket['ticket_id']; ?>">
+
+            <div class="form-group">
+                <label for="response">Yanıtınız:</label>
+                <textarea id="response" name="response" rows="5" required></textarea>
+            </div>
+
+            <button type="submit" name="add_response">Yanıt Ekle</button>
+        </form>
+    </div>
 </div> 
