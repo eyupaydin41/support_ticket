@@ -124,7 +124,6 @@ $page = $_GET['page'] ?? 'my_tickets';
     background-color: #fff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     flex-grow: 1;
-    height: 100vh;
     overflow-y: auto;
 }
 

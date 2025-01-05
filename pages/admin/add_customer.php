@@ -10,22 +10,23 @@ $departments = $stmt->fetchAll();
     <form method="POST" action="admin.php">
         <div class="form-group">
             <label for="name">Ad Soyad:</label>
-            <input type="text" id="name" name="name" required>
+            <input type="text" id="name" name="name" placeholder="Adınızı ve soyadınızı girin" required>
         </div>
 
         <div class="form-group">
             <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
+            <input type="email" id="email" name="email" placeholder="E-posta adresinizi girin" required>
         </div>
 
         <div class="form-group">
             <label for="password">Şifre:</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" placeholder="Şifrenizi oluşturun" required>
         </div>
 
         <div class="form-group">
             <label for="department_id">Departman:</label>
             <select id="department_id" name="department_id" required>
+                <option value="" disabled selected>Departman seçin</option>
                 <?php foreach ($departments as $dept): ?>
                     <option value="<?php echo $dept['department_id']; ?>">
                         <?php echo htmlspecialchars($dept['department_name']); ?>
@@ -36,4 +37,4 @@ $departments = $stmt->fetchAll();
 
         <button type="submit" name="add_customer">Müşteri Ekle</button>
     </form>
-</div> 
+</div>

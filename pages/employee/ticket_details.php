@@ -18,7 +18,7 @@ $stmt->execute([$_GET['ticket_id']]);
 $ticket = $stmt->fetch();
 
 if (!$ticket) {
-    header('Location: employee.php?page=open_tickets');
+    header('Location: employee.php?page=all_tickets');
     exit;
 }
 
@@ -96,15 +96,10 @@ $responses = $stmt->fetchAll();
             
         </div>
     </form>
+    </div>
     
-</div>
-
-            <form method="POST" action="">
-                <input type="hidden" name="ticket_id" value="<?php echo $ticket['ticket_id']; ?>">
-                <button type="submit" name="close_ticket" class="btn-red">Talebi Kapat</button>
-            </form>
-
-
-    
-    
+    <form method="POST" action="">
+        <input type="hidden" name="ticket_id" value="<?php echo $ticket['ticket_id']; ?>">
+        <button type="submit" name="close_ticket" class="btn-red">Talebi Kapat</button>
+    </form>
 </div> 

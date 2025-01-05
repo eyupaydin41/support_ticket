@@ -130,7 +130,6 @@ body {
     background-color: #fff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     flex-grow: 1;
-    height: 100vh;
     overflow-y: auto;
 }
 
@@ -146,17 +145,6 @@ body {
 .success {
     background-color: #dff0d8;
     color: #3c763d;
-}
-
-.response-form form {
-    display: inline-block;
-    margin-right: 10px; /* Butonlar arasındaki mesafeyi ayarlamak için */
-}
-
-.response-form {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
 .btn-blue {
@@ -274,29 +262,7 @@ body {
 }
 
 
-/* Yanıt Ekleme Formu */
-.response-form textarea {
-    width: 100%;
-    padding: 12px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    margin-bottom: 15px;
-    font-size: 14px;
-    font-family: Arial, sans-serif;
-}
 
-.response-form button {
-    color: #fff;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.response-form button:hover {
-}
 
 /* İstatistikler (Welcome Sayfası) */
 .dashboard-stats {
@@ -425,9 +391,43 @@ body {
     transition: background-color 0.3s ease;
 }
 
-.response-form button:hover {
+.response-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Form ve butonlar arasındaki mesafeyi ayarlıyoruz */
 }
 
+/* Yanıt Ekleme Formu */
+.response-form textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+}
+
+.response-form button {
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.response-form form {
+    display: inline-block;
+    margin-right: 10px; /* Butonlar arasındaki mesafeyi ayarlamak için */
+}
+
+.response-form {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
 .success,
 .error {
@@ -439,11 +439,7 @@ body {
     font-size: 16px;
 }
 
-.response-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Form ve butonlar arasındaki mesafeyi ayarlıyoruz */
-}
+
 
 .form-container {
     display: flex;

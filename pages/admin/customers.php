@@ -37,4 +37,4 @@ $customers = $stmt->fetchAll();
         </tr>
         <?php endforeach; ?>
     </tbody>
-</table> 
+</table>

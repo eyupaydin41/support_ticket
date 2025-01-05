@@ -97,17 +97,22 @@ $page = $_GET['page'] ?? 'employees';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
     <style>/* Genel stil */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+        body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
     margin: 0;
     padding: 0;
+    display: flex;
+    min-height: 100vh;
 }
 
 .container {
     display: flex;
+    width: 100%;
+    flex-grow: 1;
 }
 
+/* Sidebar */
 .sidebar {
     width: 250px;
     background-color: #333;
@@ -116,31 +121,47 @@ body {
     height: 100vh;
 }
 
+.sidebar {
+    width: 250px;
+    background-color: #343a40;
+    color: #fff;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 30px 20px;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+}
+
 .sidebar ul {
     list-style: none;
     padding: 0;
 }
 
 .sidebar ul li {
-    margin: 20px 0;
+    margin-bottom: 25px;
 }
 
 .sidebar ul li a {
     color: #fff;
     text-decoration: none;
-    font-size: 16px;
+    font-size: 18px;
+    display: block;
+    transition: color 0.3s ease;
 }
 
 .sidebar ul li a:hover {
-    background-color: #575757;
-    padding: 10px;
-    border-radius: 5px;
+    color: #007bff;
 }
 
+/* Content */
 .content {
-    flex-grow: 1;
-    padding: 20px;
+    margin-left: 270px;
+    padding: 30px 40px;
     background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
 h1 {
@@ -149,6 +170,7 @@ h1 {
     color: #333;
 }
 
+/* Formlar */
 .form-container {
     background-color: #fff;
     padding: 20px;
@@ -187,23 +209,15 @@ button:hover {
     background-color: #45a049;
 }
 
-/* Success/Error mesajları */
-.success {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-.error {
+button[type="submit"] {
     background-color: #f44336;
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
 }
 
+button[type="submit"]:hover {
+    background-color: #d32f2f;
+}
+
+/* Tablolar */
 .data-table {
     width: 100%;
     border-collapse: collapse;
@@ -224,19 +238,23 @@ button:hover {
     background-color: #f1f1f1;
 }
 
-/* Menü ve sayfa başlıkları */
-nav.sidebar ul li a.active {
-    background-color: #444;
+/* Mesajlar */
+.success {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
 }
 
-/* Silme butonları */
-button[type="submit"] {
+.error {
     background-color: #f44336;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
 }
 
-button[type="submit"]:hover {
-    background-color: #d32f2f;
-}
 </style>
 </head>
 <body>
