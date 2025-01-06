@@ -29,10 +29,19 @@ $customers = $stmt->fetchAll();
             <td><?php echo htmlspecialchars($customer['email']); ?></td>
             <td><?php echo htmlspecialchars($customer['department_name'] ?? '-'); ?></td>
             <td>
+                <!-- Düzenle Butonu -->
+                <form method="GET" action="admin.php" style="display: inline;">
+                    <input type="hidden" name="page" value="edit_customer">
+                    <input type="hidden" name="user_id" value="<?php echo $customer['user_id']; ?>">
+                    <button type="submit">Düzenle</button>
+                </form>
+                <!-- Sil Butonu -->
                 <form method="POST" style="display: inline;">
                     <input type="hidden" name="user_id" value="<?php echo $customer['user_id']; ?>">
-                    <button type="submit" name="delete_customer" onclick="return confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')">Sil</button>
+                    <button class="button-red" type="submit" name="delete_customer" onclick="return confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')">Sil</button>
                 </form>
+
+
             </td>
         </tr>
         <?php endforeach; ?>

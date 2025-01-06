@@ -28,9 +28,14 @@ $employees = $stmt->fetchAll();
                 <td><?php echo htmlspecialchars($employee['email']); ?></td>
                 <td><?php echo htmlspecialchars($employee['role_name']); ?></td>
                 <td>
+                    <form method="GET" action="admin.php" style="display: inline;">
+                        <input type="hidden" name="page" value="edit_employee">
+                        <input type="hidden" name="user_id" value="<?php echo $employee['user_id']; ?>">
+                        <button type="submit">Düzenle</button>
+                    </form>
                     <form method="POST" style="display: inline;">
                         <input type="hidden" name="user_id" value="<?php echo $employee['user_id']; ?>">
-                        <button type="submit" name="delete_employee" onclick="return confirm('Bu çalışanı silmek istediğinizden emin misiniz?')">Sil</button>
+                        <button class="button-red" type="submit" name="delete_employee" onclick="return confirm('Bu çalışanı silmek istediğinizden emin misiniz?')">Sil</button>
                     </form>
                 </td>
             </tr>

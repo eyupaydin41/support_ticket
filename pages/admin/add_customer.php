@@ -10,17 +10,17 @@ $departments = $stmt->fetchAll();
     <form method="POST" action="admin.php">
         <div class="form-group">
             <label for="name">Ad Soyad:</label>
-            <input type="text" id="name" name="name" placeholder="Adınızı ve soyadınızı girin" required>
+            <input type="text" id="name" name="name" placeholder="Ad ve Soyad" required>
         </div>
 
         <div class="form-group">
             <label for="email">Email:</label>
-            <input type="email" id="email" name="email" placeholder="E-posta adresinizi girin" required>
+            <input type="email" id="email" name="email" placeholder="E-posta adresi" required>
         </div>
 
         <div class="form-group">
             <label for="password">Şifre:</label>
-            <input type="password" id="password" name="password" placeholder="Şifrenizi oluşturun" required>
+            <input type="password" id="password" name="password" placeholder="Şifre" required>
         </div>
 
         <div class="form-group">
