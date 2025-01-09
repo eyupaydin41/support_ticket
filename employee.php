@@ -510,7 +510,7 @@ body {
             
             <?php if (isset($_GET['success'])): ?>
                 <div class="success">
-                    <?php if ($_GET['success'] == '1') echo "Yanıt başarıyla eklendi!"; ?>
+                    <?php if ($_GET['success'] == '1') echo "İşlem başarıyla gerçekleştirildi!"; ?>
                     <?php if ($_GET['success'] == '2') echo "Talep başarıyla kapatıldı!"; ?>
                 </div>
             <?php endif; ?>

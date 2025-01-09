@@ -141,6 +141,19 @@ try {
 
     $conn->exec($sql);
 
+    // Şifreyi hash'le
+    $adminPassword = password_hash('admin123', PASSWORD_DEFAULT);
+
+    // Başlangıç admin kullanıcısını ekle
+    $stmt = $conn->prepare("INSERT INTO USERS (name, email, password, role_id, department_id) VALUES (:name, :email, :password, :role_id, :department_id)");
+    $stmt->execute([
+        ':name' => 'Admin User',
+        ':email' => 'admin@example.com',
+        ':password' => $adminPassword,
+        ':role_id' => 1, // Admin rolü
+        ':department_id' => 1 // IT departmanı
+    ]);
+
     echo "Veritabanı ve tablolar başarıyla oluşturuldu.";
 } catch (PDOException $e) {
     echo "Hata: " . $e->getMessage();

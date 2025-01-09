@@ -1,41 +1,52 @@
 <?php
 $stmt = $conn->prepare("
-    SELECT r.*, t.ticket_id, t.title, t.description as ticket_desc, p.name
+    SELECT r.*, t.ticket_id, t.title, t.description AS ticket_desc, 
+           u.name AS responder_name
     FROM RESPONSE r
-    JOIN TICKET t ON t.ticket_id = r.ticket_id
-    JOIN USERS p ON r.employee_id = p.user_id
-    JOIN STATUS s ON r.status_id = s.status_id
+    JOIN TICKET t ON r.ticket_id = t.ticket_id
+    JOIN USERS u ON r.employee_id = u.user_id
     WHERE r.status_id = 2
+    ORDER BY r.response_date ASC
 ");
-$stmt->execute(); // Eksik olan kısı
-$responses = $stmt->fetchAll(); 
+$stmt->execute();
+$responses = $stmt->fetchAll();
 ?>
 
 <h1>Onay Bekleyen Yanıtlar</h1>
 
 <?php if (empty($responses)): ?>
-    <p>Şu anda onay bekleyen yanıt bulunmamaktadır.</p>
+    <p class="pending-responses-message">Şu anda onay bekleyen yanıt bulunmamaktadır.</p>
 <?php else: ?>
-    <div class="pending-responses-container">
-    <?php foreach ($responses as $response): ?>
-        <div class="response-card">
-            <div class="ticket-info">
-                <p><strong>Talep No:</strong> #<?php echo $response['ticket_id']; ?></p>
-                <p><strong>Talep Başlık:</strong> <?php echo htmlspecialchars($response['title']); ?></p>
-                <p><strong>Talep Açıklama:</strong> <?php echo htmlspecialchars($response['ticket_desc']); ?></p>
-                <p><strong>Yanıtlayan:</strong> <?php echo htmlspecialchars($response['name']); ?></p>
-                <p><strong>Yanıt:</strong> <?php echo htmlspecialchars($response['description']); ?></p>
-                <p><strong>Tarih:</strong> <?php echo date('d.m.Y H:i', strtotime($response['response_date'])); ?></p>
+    <div class="pending-responses">
+        <?php foreach ($responses as $response): ?>
+            <div class="pending-response-card">
+                <div class="pending-response-header">
+                    <h3 class="pending-response-title"><?php echo htmlspecialchars($response['title']); ?></h3>
+                    <span class="pending-response-id">Talep No: #<?php echo $response['ticket_id']; ?></span>
+                </div>
+
+                <div class="pending-response-info">
+                    <p><strong>Talep Açıklama:</strong> <?php echo nl2br(htmlspecialchars($response['ticket_desc'])); ?></p>
+                    <p><strong>Yanıtlayan:</strong> <?php echo htmlspecialchars($response['responder_name']); ?></p>
+                    <p><strong>Yanıt:</strong> <?php echo nl2br(htmlspecialchars($response['description'])); ?></p>
+                    <p><strong>Tarih:</strong> <?php echo date('d.m.Y H:i', strtotime($response['response_date'])); ?></p>
+                </div>
+
+                <div class="pending-response-footer">
+                    <div class="pending-response-details-link">
+                        <a href="manager.php?page=ticket_details&ticket_id=<?php echo $response['ticket_id']; ?>" 
+                            class="btn-view">Talep Detaylarını Gör</a>
+                    </div>
+                    <div class="pending-response-actions">
+                        <form method="POST" class="action-form">
+                        <input type="hidden" name="response_id" value="<?php echo $response['response_id']; ?>">
+                        <button type="submit" name="approve_response" class="btn-green">Onayla</button>
+                        <button type="submit" name="reject_response" class="btn-red">Reddet</button>
+                    </form>
+                    </div>
+                </div>
+
             </div>
-
-            <!-- Form Başlangıcı -->
-            <form method="POST">
-                <input type="hidden" name="response_id" value="<?php echo $response['response_id']; ?>">
-                <button type="submit" name="approve_response">Onayla</button>
-            </form>
-            <!-- Form Bitişi -->
-        </div>
-    <?php endforeach; ?>
+        <?php endforeach; ?>
     </div>
-
-<?php endif; ?> 
+<?php endif; ?>

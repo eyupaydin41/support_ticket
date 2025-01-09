@@ -15,20 +15,24 @@ try {
 // Talep yanıtlama
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_response'])) {
     try {
-        // Önce talebin durumunu güncelle
-        $stmt = $conn->prepare("UPDATE TICKET SET status_id = ? WHERE ticket_id = ?");
-        $stmt->execute([$_POST['status_id'], $_POST['ticket_id']]);
-        
+
         // Yanıtı ekle
         $stmt = $conn->prepare("
-            INSERT INTO RESPONSE (ticket_id, employee_id, description, response_date)
-            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            INSERT INTO RESPONSE (ticket_id, employee_id, status_id, description, response_date)
+            VALUES (?, ?, 1, ?, CURRENT_TIMESTAMP)
         ");
         $stmt->execute([
             $_POST['ticket_id'],
             $_SESSION['user_id'],
             $_POST['response']
         ]);
+        
+        // Log kaydı
+        $stmt = $conn->prepare("
+            INSERT INTO LOG (user_id, action, action_date)
+            VALUES (?, 'Talep yanıtlandı', CURRENT_TIMESTAMP)
+        ");
+        $stmt->execute([$_SESSION['user_id']]);
         
         header("Location: manager.php?page=ticket_details&ticket_id=" . $_POST['ticket_id'] . "&success=1");
         exit;
@@ -67,6 +71,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['approve_response'])) {
         $stmt->execute([1, $_POST['response_id']]);
 
         // Başarılı mesajı ekleyip geri yönlendirme yap
+        header("Location: manager.php?page=pending_responses&success=1");
+        exit;
+    } catch(PDOException $e) {
+        $error = $e->getMessage();
+    }
+}
+
+// Yanıt reddetme
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['reject_response'])) {
+    try {
+        $stmt = $conn->prepare("UPDATE RESPONSE SET status_id = ? WHERE response_id = ?");
+        $stmt->execute([3, $_POST['response_id']]);
+
         header("Location: manager.php?page=pending_responses&success=1");
         exit;
     } catch(PDOException $e) {
@@ -288,6 +305,21 @@ h1, h2, h3 {
     border-radius: 5px;
 }
 
+.btn-green {
+    background-color: #28a745; /* Yeşil arka plan */
+    color: #fff; /* Beyaz yazı rengi */
+    border: none; /* Çerçeve yok */
+    padding: 10px 20px; /* İçerik boşluğu */
+    border-radius: 5px; /* Köşeleri yuvarlatma */
+    font-size: 16px; /* Yazı boyutu */
+    cursor: pointer; /* Tıklanabilir imleç */
+    transition: background-color 0.3s ease; /* Hover animasyonu */
+}
+
+.btn-green:hover {
+    background-color: #218838; /* Hover durumunda daha koyu bir yeşil */
+}
+
 .btn-blue:hover {
     background-color: #0056b3; /* Hoverda daha koyu mavi */
 }
@@ -453,9 +485,124 @@ h1, h2, h3 {
     transition: box-shadow 0.3s ease;
 }
 
-.ticket-card:hover, {
+.ticket-card:hover {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
+
+/* Genel */
+.pending-responses {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.pending-responses-message {
+    font-size: 18px;
+    color: #555;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Yanıt Kartları */
+.pending-response-card {
+    background-color: #fdfdfd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pending-response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pending-response-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
+
+.pending-response-id {
+    font-size: 14px;
+    color: #888;
+    font-style: italic;
+}
+
+/* Yanıt Bilgileri */
+.pending-response-info p {
+    margin: 5px 0;
+    font-size: 16px;
+    color: #444;
+}
+
+.btn-approve {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-approve:hover {
+    background-color: #218838;
+}
+
+.btn-reject {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-reject:hover {
+    background-color: #c82333;
+}
+
+.pending-response-footer {
+    display: flex;
+    justify-content: space-between; /* Detay linki sola, butonlar sağa hizalanır */
+    align-items: center; /* Dikey hizalama */
+    margin-top: 20px; /* Üstten boşluk bırakmak için */
+}
+
+.pending-response-details-link {
+    flex: 1; /* Sola yaslanır */
+}
+
+.pending-response-actions {
+    display: flex;
+    gap: 10px; /* Butonlar arasındaki boşluk */
+    justify-content: flex-end; /* Butonları sağa hizalar */
+    align-items: center; /* Dikey hizalamayı merkezler */
+}
+
+
+.btn-view-details {
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-view-details:hover {
+    background-color: #0056b3;
+}
+
 
     </style>
 </head>
