@@ -12,7 +12,6 @@ try {
     die("Bağlantı hatası: " . $e->getMessage());
 }
 
-// Silme işlemleri
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['delete_employee'])) {
         try {
@@ -44,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
     
-    // Yeni çalışan ekleme
     if (isset($_POST['add_employee'])) {
         try {
             $stmt = $conn->prepare("INSERT INTO USERS (name, email, password, role_id) VALUES (?, ?, ?, ?)");
@@ -146,6 +144,94 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = $e->getMessage();
     }
     }
+    }
+
+    if (isset($_POST['assign_permission'])) {
+        $roleId = $_POST['role_id'];
+        $permissionId = $_POST['permission_id'];
+    
+        try {
+            // Veritabanı bağlantısı
+            $conn = new PDO("mysql:host=localhost;dbname=tickedsystem", "root", "");
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+            // SQL sorgusu ile rol ve yetki ilişkilendirme
+            $stmt = $conn->prepare("INSERT INTO role_permission (role_id, permission_id) VALUES (:role_id, :permission_id)");
+            $stmt->bindParam(':role_id', $roleId);
+            $stmt->bindParam(':permission_id', $permissionId);
+            $stmt->execute();
+    
+            header("Location: admin.php?page=roles_permissions&success=4");
+        } catch (PDOException $e) {
+            echo "Rol ve Yetki ilişkilendirilemedi: " . $e->getMessage();
+        }
+    }
+
+    if (isset($_POST['add_permission'])) {
+        $permissionName = $_POST['permission_name'];
+    
+        try {
+            // Veritabanı bağlantısı
+            $conn = new PDO("mysql:host=localhost;dbname=tickedsystem", "root", "");
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+            // SQL sorgusu ile yeni yetki ekleme
+            $stmt = $conn->prepare("INSERT INTO permission (permission_name) VALUES (:permission_name)");
+            $stmt->bindParam(':permission_name', $permissionName);
+            $stmt->execute();
+    
+            header("Location: admin.php?page=roles_permissions&success=4");
+        } catch (PDOException $e) {
+            echo "Yetki eklenemedi: " . $e->getMessage();
+        }
+    }
+
+    if (isset($_POST['add_role'])) {
+        $roleName = $_POST['role_name'];
+    
+        try {
+            // Veritabanı bağlantısı
+            $conn = new PDO("mysql:host=localhost;dbname=tickedsystem", "root", "");
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+            // SQL sorgusu ile yeni rol ekleme
+            $stmt = $conn->prepare("INSERT INTO role (role_name) VALUES (:role_name)");
+            $stmt->bindParam(':role_name', $roleName);
+            $stmt->execute();
+    
+            header("Location: admin.php?page=roles_permissions&success=4");
+        } catch (PDOException $e) {
+            echo "Rol eklenemedi: " . $e->getMessage();
+        }
+    }
+
+    // Silme işlemi
+    if (isset($_POST['delete_role_permission'])) {
+        $role_name = $_POST['role_name'];
+        $permission_name = $_POST['permission_name'];
+
+        // Rol ve Yetkiyi eşleştiren id'leri alalım
+        $stmt = $conn->prepare("SELECT r.role_id, p.permission_id
+                                FROM role r
+                                JOIN permission p ON r.role_name = :role_name AND p.permission_name = :permission_name");
+        $stmt->bindParam(':role_name', $role_name);
+        $stmt->bindParam(':permission_name', $permission_name);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result) {
+            // Silme işlemi
+            $role_id = $result['role_id'];
+            $permission_id = $result['permission_id'];
+
+            $deleteStmt = $conn->prepare("DELETE FROM role_permission WHERE role_id = :role_id AND permission_id = :permission_id");
+            $deleteStmt->bindParam(':role_id', $role_id);
+            $deleteStmt->bindParam(':permission_id', $permission_id);
+            $deleteStmt->execute();
+            header("Location: admin.php?page=roles_permissions&success=4");
+        } else {
+            echo "<p>Silinecek ilişki bulunamadı.</p>";
+        }
     }
 }
 
@@ -409,6 +495,115 @@ button:hover {
     background-color: #f1f1f1;
 }
 
+h1.admin-title, h2.admin-section-title {
+    color: #333;
+}
+
+h1.admin-title {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.admin-form {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    width: 80%;
+    max-width: 600px;
+}
+
+.admin-form-label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.admin-form-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.admin-form-button {
+    background-color:rgb(207, 56, 56);
+    color: white;
+    border: none;
+    padding: 5px 5px;
+    font-size: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 15%;
+}
+
+.admin-form-button:hover {
+    background-color: rgb(187, 50, 50);
+}
+
+.admin-form-add-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 5px;
+    font-size: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 15%;
+}
+
+.admin-form-add-button:hover {
+    background-color: #45a049;
+}
+
+/* Tablo stili */
+.admin-table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.admin-table-header, .admin-table-cell {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.admin-table-header {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.admin-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.admin-table tr:hover {
+    background-color: #f1f1f1;
+
+/* Açılabilir detaylar */
+.admin-details summary {
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.admin-details[open] summary {
+    background-color: #45a049;
+}
+
+.admin-details {
+    margin-bottom: 20px;
+}
 
 </style>
 </head>
@@ -420,6 +615,7 @@ button:hover {
                 <li><a href="admin.php?page=customers">Müşteriler</a></li>
                 <li><a href="admin.php?page=add_employee">Yeni Çalışan Ekle</a></li>
                 <li><a href="admin.php?page=add_customer">Yeni Müşteri Ekle</a></li>
+                <li><a href="admin.php?page=roles_permissions">Roller/Yetkiler</a></li>
                 <li><a href="admin.php?page=log">Sistem Logları</a></li>
                 <li><a href="logout.php">Çıkış Yap</a></li>
             </ul>
@@ -437,6 +633,7 @@ button:hover {
                         case '1': echo "Silme işlemi başarılı!"; break;
                         case '2': echo "Ekleme işlemi başarılı!"; break;
                         case '3': echo "Düzenleme işlemi başarılı!"; break;
+                        case '4': echo "İşlem başarıyla gerçekleştirildi!"; break;
                     }
                     ?>
                 </div>
@@ -461,7 +658,10 @@ button:hover {
                     break;
                 case 'edit_customer':
                     include 'pages/admin/edit_customer.php';
-                    break;       
+                    break;
+                case 'roles_permissions':
+                    include 'pages/admin/roles_permissions.php';
+                    break;   
                 case 'log':
                     include 'pages/admin/log.php';
                     break;   
