@@ -1,15 +1,6 @@
 <?php
 // Açık talepleri getir
-$stmt = $conn->prepare("
-    SELECT t.*, c.category_name, p.priorities_name, s.status_name, u.name as customer_name
-    FROM TICKET t
-    JOIN CATEGORY c ON t.category_id = c.category_id
-    JOIN PRIORITIES p ON t.priorities_id = p.priorities_id
-    JOIN STATUS s ON t.status_id = s.status_id
-    JOIN USERS u ON t.customer_id = u.user_id
-    WHERE t.status_id IN (1, 2)
-    ORDER BY t.priorities_id ASC, t.create_date ASC
-");
+$stmt = $conn->prepare("CALL GetOpenTickets()");
 $stmt->execute();
 $tickets = $stmt->fetchAll();
 ?>

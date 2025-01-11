@@ -1,13 +1,5 @@
 <?php
-$stmt = $conn->prepare("
-    SELECT r.*, t.ticket_id, t.title, t.description AS ticket_desc, 
-           u.name AS responder_name
-    FROM RESPONSE r
-    JOIN TICKET t ON r.ticket_id = t.ticket_id
-    JOIN USERS u ON r.employee_id = u.user_id
-    WHERE r.status_id = 2
-    ORDER BY r.response_date ASC
-");
+$stmt = $conn->prepare("CALL GetPendingResponseManager()");
 $stmt->execute();
 $responses = $stmt->fetchAll();
 ?>

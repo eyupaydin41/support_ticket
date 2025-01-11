@@ -1,14 +1,7 @@
 <?php
 // Talepleri getir
-$stmt = $conn->prepare("
-    SELECT t.*, c.category_name, p.priorities_name, s.status_name
-    FROM TICKET t
-    JOIN CATEGORY c ON t.category_id = c.category_id
-    JOIN PRIORITIES p ON t.priorities_id = p.priorities_id
-    JOIN STATUS s ON t.status_id = s.status_id
-    WHERE t.customer_id = ?
-    ORDER BY t.create_date DESC
-");
+
+$stmt = $conn->prepare("CALL GetMyTickets(?)");
 $stmt->execute([$_SESSION['user_id']]);
 $tickets = $stmt->fetchAll();
 ?>

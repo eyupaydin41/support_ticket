@@ -135,6 +135,158 @@ try {
         ('Software'), 
         ('Hardware'), 
         ('Network');
+        
+
+        CREATE PROCEDURE GetCustomers()
+        BEGIN
+            SELECT u.*, d.department_name 
+            FROM USERS u
+            LEFT JOIN DEPARTMENT d ON u.department_id = d.department_id
+            WHERE u.role_id = 2
+            ORDER BY u.user_id;
+        END;
+
+        CREATE PROCEDURE GetEmployees()
+        BEGIN
+            SELECT u.*, r.role_name 
+            FROM USERS u
+            LEFT JOIN ROLE r ON u.role_id = r.role_id
+            WHERE u.role_id IN (1, 3, 4)
+            ORDER BY u.user_id;
+        END;
+        
+        CREATE PROCEDURE GetRolesPermissions()
+        BEGIN
+           SELECT r.role_name, p.permission_name
+           FROM role_permission rp
+           JOIN role r ON rp.role_id = r.role_id
+           JOIN permission p ON rp.permission_id = p.permission_id
+           ORDER BY r.role_name, p.permission_name;
+        END;
+        
+        CREATE PROCEDURE GetMyTickets(IN customer_id INT)
+        BEGIN
+            SELECT t.*, c.category_name, p.priorities_name, s.status_name
+            FROM TICKET t
+            JOIN CATEGORY c ON t.category_id = c.category_id
+            JOIN PRIORITIES p ON t.priorities_id = p.priorities_id
+            JOIN STATUS s ON t.status_id = s.status_id
+            WHERE t.customer_id = customer_id
+            ORDER BY t.create_date DESC;
+        END;
+
+
+        CREATE PROCEDURE GetTicketDetails(IN ticket_id INT, IN customerId INT)
+        BEGIN
+            SELECT t.*, c.category_name, p.priorities_name, s.status_name
+            FROM TICKET t
+            JOIN CATEGORY c ON t.category_id = c.category_id
+            JOIN PRIORITIES p ON t.priorities_id = p.priorities_id
+            JOIN STATUS s ON t.status_id = s.status_id
+            WHERE t.ticket_id = ticket_id AND t.customer_id = customerId
+            ORDER BY t.create_date DESC;
+        END;
+            
+        
+        CREATE PROCEDURE GetTicketResponseCustomer(IN ticket_id INT)
+        BEGIN
+            SELECT r.*, u.name as employee_name
+            FROM RESPONSE r
+            JOIN USERS u ON r.employee_id = u.user_id
+            WHERE r.ticket_id = ticket_id AND r.status_id = 1
+            ORDER BY r.response_date DESC;
+        END;
+        
+        
+        CREATE PROCEDURE GetMyTicketResponsed(IN employee_id INT)
+        BEGIN
+            SELECT DISTINCT t.*, c.category_name, p.priorities_name, s.status_name, u.name as customer_name
+            FROM TICKET t
+            JOIN CATEGORY c ON t.category_id = c.category_id
+            JOIN PRIORITIES p ON t.priorities_id = p.priorities_id
+            JOIN STATUS s ON t.status_id = s.status_id
+            JOIN USERS u ON t.customer_id = u.user_id
+            JOIN RESPONSE r ON t.ticket_id = r.ticket_id
+            WHERE r.employee_id = employee_id AND r.status_id = 1
+            ORDER BY t.create_date DESC;
+        END;
+
+        CREATE PROCEDURE GetOpenTickets()
+        BEGIN
+            SELECT t.*, c.category_name, p.priorities_name, s.status_name, u.name as customer_name
+            FROM TICKET t
+            JOIN CATEGORY c ON t.category_id = c.category_id
+            JOIN PRIORITIES p ON t.priorities_id = p.priorities_id
+            JOIN STATUS s ON t.status_id = s.status_id
+            JOIN USERS u ON t.customer_id = u.user_id
+            WHERE t.status_id IN (1, 2)
+            ORDER BY t.priorities_id ASC, t.create_date ASC;
+        END;
+
+
+        CREATE PROCEDURE GetTicketDetailsEmp(IN ticket_id INT)
+        BEGIN
+            SELECT t.*, c.category_name, p.priorities_name, s.status_name, u.name as customer_name
+            FROM TICKET t
+            JOIN CATEGORY c ON t.category_id = c.category_id
+            JOIN PRIORITIES p ON t.priorities_id = p.priorities_id
+            JOIN STATUS s ON t.status_id = s.status_id
+            JOIN USERS u ON t.customer_id = u.user_id
+            WHERE t.status_id IN (1, 2) AND t.ticket_id = ticket_id
+            ORDER BY t.priorities_id ASC, t.create_date ASC;
+        END;
+        
+        CREATE PROCEDURE GetOpenTicketsManager()
+        BEGIN
+            SELECT t.*, c.category_name, p.priorities_name, s.status_name, u.name as customer_name
+            FROM TICKET t
+            JOIN CATEGORY c ON t.category_id = c.category_id
+            JOIN PRIORITIES p ON t.priorities_id = p.priorities_id
+            JOIN STATUS s ON t.status_id = s.status_id
+            JOIN USERS u ON t.customer_id = u.user_id
+            WHERE t.status_id IN (1, 2)
+            ORDER BY t.priorities_id ASC, t.create_date ASC;
+        END;
+
+        CREATE PROCEDURE GetMyTicketResponsedManager(IN user_id INT)
+        BEGIN
+            SELECT DISTINCT t.*, c.category_name, p.priorities_name, s.status_name, u.name as customer_name
+            FROM TICKET t
+            JOIN CATEGORY c ON t.category_id = c.category_id
+            JOIN PRIORITIES p ON t.priorities_id = p.priorities_id
+            JOIN STATUS s ON t.status_id = s.status_id
+            JOIN USERS u ON t.customer_id = u.user_id
+            JOIN RESPONSE r ON t.ticket_id = r.ticket_id
+            WHERE r.employee_id = user_id AND r.status_id = 1
+            ORDER BY t.create_date DESC;
+        END;
+        
+        CREATE PROCEDURE GetPendingResponseManager()
+        BEGIN
+           SELECT r.*, t.ticket_id, t.title, t.description AS ticket_desc, 
+           u.name AS responder_name
+           FROM RESPONSE r
+           JOIN TICKET t ON r.ticket_id = t.ticket_id
+           JOIN USERS u ON r.employee_id = u.user_id
+           WHERE r.status_id = 2
+           ORDER BY r.response_date ASC;
+        END;
+
+        CREATE PROCEDURE GetTicketDetailsManager(IN ticket_id INT)
+        BEGIN
+           SELECT t.*, c.category_name, p.priorities_name, s.status_name, 
+           u.name as customer_name, d.department_name
+           FROM TICKET t
+           JOIN CATEGORY c ON t.category_id = c.category_id
+           JOIN PRIORITIES p ON t.priorities_id = p.priorities_id
+           JOIN STATUS s ON t.status_id = s.status_id
+           JOIN USERS u ON t.customer_id = u.user_id
+           JOIN DEPARTMENT d ON u.department_id = d.department_id
+           WHERE t.ticket_id = ticket_id
+           ORDER BY t.create_date DESC;
+
+        END;
+        
     ";
 
     $conn->exec($sql);

@@ -1,11 +1,5 @@
 <?php
-$stmt = $conn->query("
-    SELECT u.*, d.department_name 
-    FROM USERS u
-    LEFT JOIN DEPARTMENT d ON u.department_id = d.department_id
-    WHERE u.role_id = 2
-    ORDER BY u.user_id
-");
+$stmt = $conn->query("CALL GetCustomers()");
 $customers = $stmt->fetchAll();
 ?>
 

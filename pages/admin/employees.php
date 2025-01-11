@@ -1,11 +1,5 @@
 <?php
-$stmt = $conn->query("
-    SELECT u.*, r.role_name 
-    FROM USERS u
-    LEFT JOIN ROLE r ON u.role_id = r.role_id
-    WHERE u.role_id IN (1, 3, 4)
-    ORDER BY u.user_id
-");
+$stmt = $conn->query("CALL GetEmployees()");
 $employees = $stmt->fetchAll();
 ?>
 

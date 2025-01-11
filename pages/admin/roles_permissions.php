@@ -8,11 +8,7 @@ try {
     $conn = new PDO("mysql:host=localhost;dbname=tickedsystem", "root", "");
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $stmt = $conn->prepare("SELECT r.role_name, p.permission_name
-                            FROM role_permission rp
-                            JOIN role r ON rp.role_id = r.role_id
-                            JOIN permission p ON rp.permission_id = p.permission_id
-                            ORDER BY r.role_name, p.permission_name");
+    $stmt = $conn->prepare("CALL GetRolesPermissions()");
     $stmt->execute();
     $rolePermissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch(PDOException $e) {
