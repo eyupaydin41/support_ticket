@@ -66,7 +66,7 @@ try {
             ticket_id INT PRIMARY KEY AUTO_INCREMENT,
             title VARCHAR(255) NOT NULL,
             description TEXT NOT NULL,
-            create_date DATE NOT NULL,
+            create_date DATETIME NOT NULL,
             status_id INT NOT NULL,
             priorities_id INT NOT NULL,
             customer_id INT NOT NULL,
@@ -84,7 +84,7 @@ try {
             employee_id INT NOT NULL,
             description TEXT NOT NULL,
             status_id INT NOT NULL,
-            response_date DATE NOT NULL,
+            response_date DATETIME NOT NULL,
             FOREIGN KEY (ticket_id) REFERENCES TICKET(ticket_id),
             FOREIGN KEY (employee_id) REFERENCES USERS(user_id) ON DELETE CASCADE,
             FOREIGN KEY (status_id) REFERENCES STATUS(status_id)
@@ -95,7 +95,7 @@ try {
             log_id INT PRIMARY KEY AUTO_INCREMENT,
             user_id INT NOT NULL,
             action TEXT NOT NULL,
-            action_date DATE NOT NULL,
+            action_date DATETIME NOT NULL,
             FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
         );
 
