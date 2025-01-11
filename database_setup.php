@@ -86,9 +86,8 @@ try {
             status_id INT NOT NULL,
             response_date DATE NOT NULL,
             FOREIGN KEY (ticket_id) REFERENCES TICKET(ticket_id),
-            FOREIGN KEY (employee_id) REFERENCES USERS(user_id),
-            FOREIGN KEY (status_id) REFERENCES STATUS(status_id),
-            ON DELETE CASCADE;
+            FOREIGN KEY (employee_id) REFERENCES USERS(user_id) ON DELETE CASCADE,
+            FOREIGN KEY (status_id) REFERENCES STATUS(status_id)
         );
 
         -- 10. LOG Tablosu
@@ -97,8 +96,7 @@ try {
             user_id INT NOT NULL,
             action TEXT NOT NULL,
             action_date DATE NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES USERS(user_id),
-            ON DELETE CASCADE;
+            FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
         );
 
         -- 11. ROLE_PERMISSION Tablosu
