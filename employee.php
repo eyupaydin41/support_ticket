@@ -175,6 +175,22 @@ body {
     background-color: #c82333; /* Hoverda daha koyu kırmızı */
 }
 
+/* Açık Talepler Başlığı */
+.open-tickets-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    text-align: center;
+    letter-spacing: 1px;
+    background-color: #f4f4f9;
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: color 0.3s ease;
+}
+
 
 /* Ticket kartları */
 .tickets-container {

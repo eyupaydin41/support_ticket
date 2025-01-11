@@ -13,6 +13,9 @@ try {
 
     // SQL komutları
     $sql = "
+
+        SET @current_user_id = 999; -- İşlemi yapan kullanıcının user_id'si
+
         -- 1. ROLE Tablosu
         CREATE TABLE IF NOT EXISTS ROLE (
             role_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -108,6 +111,17 @@ try {
             FOREIGN KEY (permission_id) REFERENCES PERMISSION(permission_id)
         );
 
+        CREATE TABLE OPEN_TICKET_COUNT (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    open_ticket_count INT DEFAULT 0
+);
+
+CREATE TABLE customer_count (
+    id INT PRIMARY KEY,
+    total_customers INT NOT NULL
+);
+
+
         -- Başlangıç verilerini ekleme
         INSERT INTO ROLE (role_name) VALUES 
         ('Admin'), 
@@ -135,7 +149,14 @@ try {
         ('Software'), 
         ('Hardware'), 
         ('Network');
+
+        INSERT INTO OPEN_TICKET_COUNT (open_ticket_count) VALUES (0);
+
+        INSERT INTO customer_count (id, total_customers) VALUES (1, 0);
+
+
         
+        -- Prosedürler
 
         CREATE PROCEDURE GetCustomers()
         BEGIN
@@ -286,7 +307,50 @@ try {
            ORDER BY t.create_date DESC;
 
         END;
-        
+
+        -- Tetikleyiciler
+
+CREATE TRIGGER after_ticket_creation
+AFTER INSERT ON TICKET
+FOR EACH ROW
+BEGIN
+    IF NEW.status_id = 1 THEN
+        UPDATE OPEN_TICKET_COUNT 
+        SET open_ticket_count = open_ticket_count + 1;
+    END IF;
+END;
+
+CREATE TRIGGER after_ticket_closing
+AFTER UPDATE ON TICKET
+FOR EACH ROW
+BEGIN
+    IF OLD.status_id != 3 AND NEW.status_id = 3 THEN
+        UPDATE OPEN_TICKET_COUNT
+        SET open_ticket_count = open_ticket_count - 1;
+    END IF;
+END;
+
+CREATE TRIGGER update_customer_count_after_insert
+AFTER INSERT ON USERS
+FOR EACH ROW
+BEGIN
+    IF NEW.role_id = 2 THEN
+        UPDATE customer_count SET total_customers = total_customers + 1 WHERE id = 1;
+    END IF;
+END;
+
+CREATE TRIGGER update_customer_count_after_delete
+AFTER DELETE ON USERS
+FOR EACH ROW
+BEGIN
+    IF OLD.role_id = 2 THEN
+        UPDATE customer_count SET total_customers = total_customers - 1 WHERE id = 1;
+    END IF;
+END;
+
+
+
+
     ";
 
     $conn->exec($sql);

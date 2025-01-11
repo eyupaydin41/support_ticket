@@ -3,9 +3,13 @@
 $stmt = $conn->prepare("CALL GetOpenTicketsManager()");
 $stmt->execute();
 $tickets = $stmt->fetchAll();
+// Açık talepler sayısını getir
+$stmt = $conn->prepare("SELECT open_ticket_count FROM OPEN_TICKET_COUNT LIMIT 1");
+$stmt->execute();
+$ticket_count = $stmt->fetchColumn();
 ?>
 
-<h1>Açık Talepler</h1>
+<h1 class="open-tickets-title">Açık Talepler (Toplam: <?php echo $ticket_count; ?>)</h1>
 
 <?php if (empty($tickets)): ?>
     <p>Şu anda açık talep bulunmamaktadır.</p>

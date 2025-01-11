@@ -1,9 +1,16 @@
 <?php
 $stmt = $conn->query("CALL GetCustomers()");
 $customers = $stmt->fetchAll();
+
+$stmt = $conn->prepare("SELECT total_customers FROM customer_count WHERE id = 1");
+$stmt->execute();
+
+$total_customers = $stmt->fetchColumn();
+
 ?>
 
-<h1>Müşteriler</h1>
+
+<h1 class="stats-header">Müşteriler <span>(Toplam: <?php echo $total_customers; ?>)</span></h1>
 
 <table class="data-table">
     <thead>

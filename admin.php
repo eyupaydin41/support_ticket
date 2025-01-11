@@ -302,6 +302,24 @@ $page = $_GET['page'] ?? 'employees';
     color: #007bff;
 }
 
+/* Müşteriler başlığı için stil */
+.stats-header {
+    font-size: 24px; /* Başlık font boyutu */
+    font-weight: bold; /* Kalın font */
+    color: #333; /* Başlık rengi */
+    margin-bottom: 20px; /* Başlık ile altındaki içeriği ayıran boşluk */
+    text-align: center; /* Başlığı ortalar */
+    border-bottom: 2px solidrgb(0, 0, 0); /* Başlık altında ince bir çizgi */
+    padding-bottom: 10px; /* Başlık ve altındaki çizgi arasında boşluk */
+}
+
+/* Toplam müşteri sayısı kısmı */
+.stats-header span {
+    color:rgb(22, 9, 9); /* Mavi renk */
+    font-size: 20px; /* Toplam sayıyı biraz daha küçük yapmak */
+    font-weight: normal; /* Normal font */
+}
+
 /* Content */
 .content {
     margin-left: 270px;
